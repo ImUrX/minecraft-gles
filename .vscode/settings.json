@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "jrand.h": "c",
+        "stdio.h": "c",
+        "cmath": "c",
+        "stdint.h": "c"
+    }
+}
