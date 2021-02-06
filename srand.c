@@ -47,10 +47,8 @@ ulong multu64(ulong x, ulong y) {
     b = x.low & MSK16;
     c = y.low >> 16;
     d = y.low & MSK16;
-    z.high = a * c;
-    z.low = b * d;
-    mixed(&z, a * d);
-    mixed(&z, b * c);
+    z.low = x.low * y.low;
+    z.high = (x.high * y.low) + (x.low * y.high) + a*c + ((a*d + b*c) >> 16);
 	return z;
 }
 
