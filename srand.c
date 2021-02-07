@@ -4,7 +4,6 @@
 #define MSK32 0xffffffffU
 #define MSK16 0xffffU
 
-
 typedef struct _ulong {
 	uint32_t low;
 	uint32_t high;
@@ -48,7 +47,7 @@ ulong multu64(ulong x, ulong y) {
     c = y.low >> 16;
     d = y.low & MSK16;
     z.low = x.low * y.low;
-    z.high = (x.high * y.low) + (x.low * y.high) + a*c + ((a*d + b*c) >> 16);
+    z.high = (x.high * y.low) + (x.low * y.high) + a*c + ((a*d + b*c) >> 16) + (z.low < (x.low > y.low ? x.low : y.low));
 	return z;
 }
 
@@ -85,26 +84,25 @@ void set_seed(SimpleRandom *self, ulong seed) {
     self->seed = andu64(xoru64(seed, MULT), MASK);
 }
 
-unsigned int next_int(SimpleRandom *self) {
-    print_ulong(multu64(self->seed, MULT));
+uint32_t next_int(SimpleRandom *self) {
     self->seed = andu64(addu64(multu64(self->seed, MULT), get_ulong(0xBU)), MASK);
     return rshiftu64(self->seed, 17, 131072, 32768).low;
 }
 
-unsigned int next_int_bound(SimpleRandom *self, unsigned int bound) {
-    unsigned int r = next_int(self);
-    unsigned int m = bound - 1;
+uint32_t next_int_bound(SimpleRandom *self, uint32_t bound) {
+    uint32_t r = next_int(self);
+    uint32_t m = bound - 1;
     if((bound & m) == 0) {
-        r = (((unsigned long) bound) * ((unsigned long) r)) >> 31;
+        r = (((uint64_t) bound) * ((uint64_t) r)) >> 31;
     } else {
-        unsigned int u = r;
+        uint32_t u = r;
         while(u - (r = u % bound) + m < 0) u = next_int(self);
     }
     return r;
 }
 
-unsigned int generic_enchantability(SimpleRandom *self, unsigned int shelves) {
-    unsigned int first = next_int_bound(self, 8);
-    unsigned int second = next_int_bound(self, shelves + 1);
+uint32_t generic_enchantability(SimpleRandom *self, uint32_t shelves) {
+    uint32_t first = next_int_bound(self, 8);
+    uint32_t second = next_int_bound(self, shelves + 1);
     return first + 1 + (shelves >> 1) + second;
 }

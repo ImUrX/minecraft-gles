@@ -3,6 +3,7 @@
         "jrand.h": "c",
         "stdio.h": "c",
         "cmath": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "limits": "c"
     }
 }
