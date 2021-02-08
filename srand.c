@@ -41,13 +41,20 @@ void mixed(ulong *x, uint32_t inner_term) {
 
 ulong multu64(ulong x, ulong y) {
 	ulong z;
-	uint32_t a,b,c,d;
+	uint32_t a,b,c,d,min,max;
     a = x.low >> 16;
     b = x.low & MSK16;
     c = y.low >> 16;
     d = y.low & MSK16;
     z.low = x.low * y.low;
-    z.high = (x.high * y.low) + (x.low * y.high) + a*c + ((a*d + b*c) >> 16) + (z.low < (x.low > y.low ? x.low : y.low));
+    if(x.low > y.low) {
+        min = y.low;
+        max = x.low;
+    } else {
+        max = y.low;
+        min = x.low;
+    }
+    z.high = (x.high * y.low) + (x.low * y.high) + a*c + ((a*d + b*c) >> 16) + (z.low < max && min >= 0xffffUL);
 	return z;
 }
 
@@ -93,7 +100,7 @@ uint32_t next_int_bound(SimpleRandom *self, uint32_t bound) {
     uint32_t r = next_int(self);
     uint32_t m = bound - 1;
     if((bound & m) == 0) {
-        r = (((uint64_t) bound) * ((uint64_t) r)) >> 31;
+        r = rshiftu64(multu64(get_ulong(bound), get_ulong(r)), 31, 2147483648, 2).low;
     } else {
         uint32_t u = r;
         while(u - (r = u % bound) + m < 0) u = next_int(self);
